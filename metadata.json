@@ -1,0 +1,19 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Gabriel Braz"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "Displays battery levels for wireless peripherals (mouse, headset, keyboard) via 2.4 GHz USB dongles, hidraw, UPower, and HeadsetControl",
+        "Icon": "battery-good",
+        "Id": "org.gabrielbraz.peripheralbattery",
+        "License": "Apache-2.0",
+        "Name": "Peripheral Battery",
+        "Version": "1.0.0",
+        "Website": "https://github.com/gabrielbraz827/plasma-peripheral-battery"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

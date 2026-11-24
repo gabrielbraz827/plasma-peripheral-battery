@@ -1,0 +1,6 @@
+# Allow non-root users to query battery status via hidraw
+# GTAI / Akko S9 Ultra & S9 Master 2.4GHz USB Dongles (VID 36eb)
+KERNEL=="hidraw*", ATTRS{idVendor}=="36eb", MODE="0660", TAG+="uaccess"
+
+# RongYuan / Akko / MonsGeek 2.4GHz Wireless Mice & Keyboards (VID 3151)
+KERNEL=="hidraw*", ATTRS{idVendor}=="3151", MODE="0660", TAG+="uaccess"
