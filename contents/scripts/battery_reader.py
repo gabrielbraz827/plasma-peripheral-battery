@@ -128,10 +128,17 @@ def parse_uevent(path: str) -> dict:
     return info
 
 
-def query_rongyuan_3151_battery(hidraw_dev: str):
+def query_rongyuan_3151_battery(hidraw_dev: str, dev_type: str = "mouse"):
     """
     Query battery on Akko / RongYuan devices (VID 0x3151) using the 0xF7 status poll
     on the 64-byte Feature Report 0x00 (vendor usage page 0xFFFF).
+
+    Response layout (resp[0] is Report ID 0x00, payload is resp[1..64]):
+      resp[1] (byte 0): relay reply pending flag
+      resp[2] (byte 1): keyboard battery percentage (0..100)
+      resp[3] (byte 2): mouse battery percentage (0..100)
+      resp[4] (byte 3): keyboard offline/standby flag (0 = online, 1 = offline/standby)
+      resp[5] (byte 4): mouse offline/standby flag (0 = online, 1 = offline/standby)
     """
     fd = None
     try:
@@ -148,9 +155,12 @@ def query_rongyuan_3151_battery(hidraw_dev: str):
         resp[0] = 0x00
         fcntl.ioctl(fd, _hidiocgfeature(65), resp)
 
-        battery = int(resp[3])
-        online = bool(resp[4])
-        charging = bool(resp[5])
+        if dev_type == "keyboard":
+            battery = int(resp[2])
+            online = resp[4] == 0
+        else:
+            battery = int(resp[3])
+            online = resp[5] == 0
 
         if not online and battery == 0:
             return {
@@ -163,9 +173,9 @@ def query_rongyuan_3151_battery(hidraw_dev: str):
         if 0 <= battery <= 100:
             return {
                 "percentage": battery,
-                "charging": charging,
-                "connected": True,
-                "note": "",
+                "charging": False,
+                "connected": online,
+                "note": "" if online else "Standby",
             }
     except PermissionError:
         return {
@@ -222,7 +232,7 @@ def scan_hidraw_devices() -> list:
                 is_keyboard = "keyboard" in hid_name.lower()
                 dev_type = "keyboard" if is_keyboard else "mouse"
                 display_name = hid_name or ("2.4G Keyboard" if is_keyboard else "2.4G Mouse")
-                res = query_rongyuan_3151_battery(dev_node)
+                res = query_rongyuan_3151_battery(dev_node, dev_type)
                 if res is not None:
                     devices.append({
                         "id": f"hidraw_{vid}_{pid}",
